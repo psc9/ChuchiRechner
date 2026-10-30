@@ -13,62 +13,62 @@
 <style>
   :root{
     --bg:#f7f4ee; --card:#ffffff; --ink:#2b2a27; --muted:#7a756b; --line:#e7e1d6;
-    --accent:#c8742c; --accent-soft:#f6e6d6; --warn-bg:#fff6e5; --warn:#8a5a12;
+    --accent:#c8742c; --accent-soft:#f6e6d6; --warn:#8a5a12;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#1c1b19; --card:#262522; --ink:#f0ece4; --muted:#a59f93; --line:#3a3833;
-      --accent:#e3954f; --accent-soft:#3a2c20; --warn-bg:#33291a; --warn:#e8c27a; }
+      --accent:#e3954f; --accent-soft:#3a2c20; --warn:#e8c27a; }
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
     -webkit-text-size-adjust:100%}
-  main{max-width:480px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
-  label.q{display:block;font-weight:650;font-size:17px;margin-bottom:10px}
-  .card .k{display:block;font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
-  .amount{display:flex;align-items:center;gap:10px}
-  .step{width:52px;height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);
-    color:var(--ink);font-size:26px;line-height:1;cursor:pointer;flex:none}
+  main{max-width:480px;margin:0 auto;padding:calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .top{padding:10px 12px 10px}
+  .k{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .amount{display:flex;align-items:center;gap:8px;margin-top:6px}
+  .step{width:48px;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);
+    color:var(--ink);font-size:24px;line-height:1;cursor:pointer;flex:none}
   .step:active{background:var(--accent-soft)}
   .field{flex:1;display:flex;align-items:baseline;justify-content:center;gap:6px;
-    border:1.5px solid var(--accent);border-radius:14px;height:52px;padding:0 12px;background:var(--card)}
+    border:1.5px solid var(--accent);border-radius:12px;height:48px;padding:0 12px;background:var(--card)}
   .field input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);
-    font-size:28px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
-  .field span{font-size:18px;color:var(--muted);font-weight:600}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    font-size:26px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;font-family:inherit}
+  .field span{font-size:17px;color:var(--muted);font-weight:600}
+  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
   .chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;
-    padding:7px 13px;font-size:14px;cursor:pointer}
+    padding:6px 0;font-size:14px;cursor:pointer;font-family:inherit}
   .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .water{background:var(--accent-soft);border-radius:16px;padding:14px 16px}
-  .water .k{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-  .water .row{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+  .water{background:var(--accent-soft);padding:8px 12px 10px;display:flex;align-items:center;gap:10px}
+  .water .k{flex:1}
+  .water .row{display:flex;align-items:baseline;gap:6px}
   .water input{flex:none;width:3ch;min-width:1.5ch;border:0;border-bottom:2px dashed transparent;outline:0;background:transparent;
-    color:var(--ink);font-size:38px;font-weight:750;font-variant-numeric:tabular-nums;padding:0;font-family:inherit}
+    color:var(--ink);font-size:34px;font-weight:750;font-variant-numeric:tabular-nums;padding:0;font-family:inherit;text-align:right}
   .water input:focus{border-bottom-color:var(--accent)}
-  .water .u{font-size:38px;font-weight:750;flex:none}
-  .water .n{font-size:13px;color:var(--muted);margin-top:4px}
-  .hint{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px;line-height:1.4}
+  .water .u{font-size:34px;font-weight:750;flex:none}
+  .hint{color:var(--warn);font-size:13px;line-height:1.35;padding:0 12px 10px;background:var(--accent-soft)}
+  .hint:empty{display:none}
 </style>
 </head>
 <body>
 <main>
   <section class="card">
-    <label class="k" for="amount">Produkt</label>
-    <div class="amount">
-      <button class="step" id="minus" aria-label="weniger">−</button>
-      <div class="field"><input id="amount" inputmode="numeric" value="250"><span>g</span></div>
-      <button class="step" id="plus" aria-label="mehr">+</button>
+    <div class="top">
+      <label class="k" for="amount">Produkt</label>
+      <div class="amount">
+        <button class="step" id="minus" aria-label="weniger">−</button>
+        <div class="field"><input id="amount" inputmode="numeric" value="250"><span>g</span></div>
+        <button class="step" id="plus" aria-label="mehr">+</button>
+      </div>
+      <div class="chips" id="chips"></div>
     </div>
-    <div class="chips" id="chips"></div>
+    <div class="water">
+      <label class="k" for="water">Wasser<br><span style="text-transform:none;letter-spacing:0;font-weight:400">antippen zum Ändern</span></label>
+      <div class="row"><input id="water" inputmode="decimal" value="5 ½" size="4"><span class="u">dl</span></div>
+    </div>
+    <div class="hint" id="hints"></div>
   </section>
-
-  <section class="water">
-    <label class="k" for="water">Wasser</label>
-    <div class="row"><input id="water" inputmode="decimal" value="5 ½" size="4"><span class="u">dl</span></div>
-    <div class="n">Antippen zum Ändern</div>
-  </section>
-  <div id="hints"></div>
 </main>
 
 <script>
@@ -89,18 +89,20 @@
   }
   function grams(){ return Math.max(0, num(amountEl.value)); }
 
-  const ctx = document.createElement("canvas").getContext("2d");
+  // Breite der Wassereingabe an den Inhalt anpassen (über ein unsichtbares Mess-Element)
+  const meter = document.createElement("span");
+  meter.style.cssText = "position:absolute;visibility:hidden;white-space:pre;font-size:34px;font-weight:750;font-variant-numeric:tabular-nums";
+  document.body.appendChild(meter);
   function fit(){
-    const cs = getComputedStyle(waterEl);
-    ctx.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
-    waterEl.style.width = Math.ceil(ctx.measureText(waterEl.value || "0").width + 4) + "px";
+    meter.textContent = waterEl.value || "0";
+    waterEl.style.width = Math.ceil(meter.getBoundingClientRect().width + 6) + "px";
   }
   function showWater(){ waterEl.value = dl(grams() * ratio); fit(); }
 
   function renderExtras(){
     const g = grams(), w = g * ratio;
     $("hints").innerHTML = (g >= 500 && w > 0)
-      ? `<div class="hint"><b>Tipp bei grossen Mengen:</b> Es verdunstet im Verhältnis weniger Wasser. Wenn es sonst zu weich wird: eher <b>${dl(w * 0.95)} dl</b> nehmen.</div>`
+      ? `<b>Grosse Menge:</b> Es verdunstet weniger. Wird es zu weich, eher <b>${dl(w * 0.95)} dl</b> nehmen.`
       : "";
     $("chips").innerHTML = QUICK.map(q => `<button class="chip${Math.round(g) === q ? " on" : ""}" data-g="${q}">${q >= 1000 ? q / 1000 + " kg" : q + " g"}</button>`).join("");
   }
