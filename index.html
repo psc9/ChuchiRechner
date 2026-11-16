@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de-CH">
 <head>
-<!-- ChuchiRechner · Version 1.0 · 04.11.2026 -->
+<!-- ChuchiRechner · Version 2.0 · 16.11.2026 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -41,6 +41,10 @@
   .chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;
     padding:7px 13px;font-size:14px;cursor:pointer}
   .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .prods{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .prods .chip{font-size:15px;padding:8px 14px}
+  .water .meta{font-size:14px;color:var(--ink);margin-top:6px}
+  .water .meta:empty{display:none}
   .water{background:var(--accent-soft);border-radius:16px;padding:14px 16px}
   .water .k{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
   .water .row{display:flex;align-items:baseline;gap:8px;margin-top:4px}
@@ -60,8 +64,10 @@
 </head>
 <body>
 <main>
+  <div class="prods" id="prods" role="group" aria-label="Produkt"></div>
+
   <section class="card">
-    <label class="k" for="amount">Produkt</label>
+    <label class="k" for="amount" id="prodName">Produkt</label>
     <div class="amount">
       <button class="step" id="minus" aria-label="weniger">−</button>
       <div class="field"><input id="amount" inputmode="numeric" value="250"><span>g</span></div>
@@ -71,8 +77,9 @@
   </section>
 
   <section class="water">
-    <label class="k" for="water">Wasser</label>
+    <label class="k" for="water" id="liquidName">Wasser</label>
     <div class="row"><input id="water" inputmode="decimal" value="5 ½" size="4"><span class="u">dl</span></div>
+    <div class="meta" id="meta"></div>
     <div class="n">Antippen zum Ändern</div>
   </section>
   <div id="hints"></div>
@@ -88,7 +95,21 @@
   const QUICK = [250, 500, 750, 1000], STEP = 50;
   const $ = id => document.getElementById(id);
   const amountEl = $("amount"), waterEl = $("water");
-  let ratio = 5.5 / 250;   // dl Wasser pro g
+  // Werte gemäss Packung, jeweils für 250 g
+  const PRODUKTE = [
+    { id: "basmati",    name: "Basmati",         dl: 4,   zeit: "15 Min.", gross: true,
+      notiz: "Vorher spülen, bis das Wasser klar ist, gut abtropfen" },
+    { id: "vollkorn",   name: "Vollkornreis",    dl: 5.5, zeit: "50 Min.", gross: true,
+      notiz: "Über Nacht eingeweicht: ca. 30 Min." },
+    { id: "risotto",    name: "Risotto",         dl: 7,   zeit: "20 Min.", fluessig: "Bouillon",
+      extra: { name: "Weisswein", dl: 2.5 }, notiz: "Bouillon nach und nach dazugiessen" },
+    { id: "bramata",    name: "Polenta Bramata", dl: 10,  zeit: "40 Min." },
+    { id: "maisgriess", name: "Maisgriess",      dl: 12,  zeit: "2 Min.",
+      notiz: "Oder halb Milch, halb Wasser" }
+  ];
+  let prod = PRODUKTE[0];
+  try { prod = PRODUKTE.find(p => p.id === localStorage.getItem("produkt")) || prod; } catch (e) {}
+  let ratio = prod.dl / 250;   // dl Wasser pro g
 
   function num(v){
     let s = String(v).replace(",", ".").replace(/½/g, ".5").replace(/\s+/g, "");
@@ -113,16 +134,34 @@
 
   function renderExtras(){
     const g = grams(), w = g * ratio;
-    $("hints").innerHTML = (g >= 500 && w > 0)
+    const meta = [];
+    if (prod.extra) meta.push(`<b>+ ${dl(g * prod.extra.dl / 250)} dl ${prod.extra.name}</b>`);
+    meta.push("Kochzeit " + prod.zeit);
+    if (prod.notiz) meta.push(prod.notiz);
+    $("meta").innerHTML = meta.join(" · ");
+    $("hints").innerHTML = (prod.gross && g >= 500 && w > 0)
       ? `<div class="hint"><b>Tipp bei grossen Mengen:</b> Es verdunstet im Verhältnis weniger Wasser. Wenn es sonst zu weich wird: eher <b>${dl(w * 0.95)} dl</b> nehmen.</div>`
       : "";
     $("chips").innerHTML = QUICK.map(q => `<button class="chip${Math.round(g) === q ? " on" : ""}" data-g="${q}">${q >= 1000 ? q / 1000 + " kg" : q + " g"}</button>`).join("");
+  }
+
+  function renderProds(){
+    $("prods").innerHTML = PRODUKTE.map(p => `<button class="chip${p === prod ? " on" : ""}" data-p="${p.id}">${p.name}</button>`).join("");
+    $("prodName").textContent = prod.name;
+    $("liquidName").textContent = prod.fluessig || "Wasser";
+  }
+  function setProd(id){
+    prod = PRODUKTE.find(p => p.id === id) || prod;
+    ratio = prod.dl / 250;
+    try { localStorage.setItem("produkt", prod.id); } catch (e) {}
+    renderProds(); showWater(); renderExtras();
   }
 
   function setAmount(v){ amountEl.value = Math.max(0, Math.round(v)); showWater(); renderExtras(); }
 
   $("minus").addEventListener("click", () => setAmount(grams() - STEP));
   $("plus").addEventListener("click", () => setAmount(grams() + STEP));
+  $("prods").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) setProd(b.dataset.p); });
   $("chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) setAmount(+b.dataset.g); });
   amountEl.addEventListener("input", () => { showWater(); renderExtras(); });
   amountEl.addEventListener("focus", () => amountEl.select());
@@ -177,7 +216,7 @@
     }, 350);
   });
 
-  showWater(); renderExtras();
+  renderProds(); showWater(); renderExtras();
 })();
 </script>
 </body>
