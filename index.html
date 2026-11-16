@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de-CH">
 <head>
-<!-- ChuchiRechner · Version 2.3 · 16.11.2026 -->
+<!-- ChuchiRechner · Version 2.4 · 16.11.2026 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -87,7 +87,6 @@
     <label class="k" for="water" id="liquidName">Wasser</label>
     <div class="row"><input id="water" inputmode="decimal" value="5 ½" size="4"><span class="u">dl</span></div>
     <div class="meta" id="meta"></div>
-    <div class="n">Antippen zum Ändern</div>
   </section>
   <div id="hints"></div>
 
@@ -157,7 +156,7 @@
     meta.push("Kochzeit " + prod.zeit);
     if (prod.notiz) meta.push(prod.notiz);
     if (prod.packung && (prod.packung === "gewaschen") !== gewaschen)
-      meta.push(`Packung: ${dl(prod.dl)} dl für ${prod.packung}en Reis, hier angepasst`);
+      meta.push(`Packung: ${dl(prod.dl)} dl`);
     $("meta").innerHTML = meta.join(" · ");
     $("hints").innerHTML = (prod.gross && g >= 500 && w > 0)
       ? `<div class="hint"><b>Tipp bei grossen Mengen:</b> Es verdunstet im Verhältnis weniger Wasser. Wenn es sonst zu weich wird: eher <b>${dl(w * 0.95)} dl</b> nehmen.</div>`
