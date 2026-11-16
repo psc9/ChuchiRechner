@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de-CH">
 <head>
-<!-- ChuchiRechner · Version 2.1 · 16.11.2026 -->
+<!-- ChuchiRechner · Version 2.2 · 16.11.2026 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -104,10 +104,12 @@
   const amountEl = $("amount"), waterEl = $("water");
   // Werte gemäss Packung, jeweils für 250 g; "packung" sagt, ob der Wert für gewaschenen Reis gilt
   const PRODUKTE = [
-    { id: "basmati",    name: "Basmati",         dl: 4,   zeit: "15 Min.", gross: true,
-      packung: "gewaschen" },
+    { id: "langkorn",   name: "Langkornreis",    dl: 5.5, zeit: "20 Min.", gross: true,
+      packung: "ungewaschen" },
     { id: "vollkorn",   name: "Vollkornreis",    dl: 5.5, zeit: "50 Min.", gross: true,
       packung: "ungewaschen", notiz: "Über Nacht eingeweicht: ca. 30 Min." },
+    { id: "basmati",    name: "Basmati",         dl: 4,   zeit: "15 Min.", gross: true,
+      packung: "gewaschen" },
     { id: "risotto",    name: "Risotto",         dl: 7,   zeit: "20 Min.", fluessig: "Bouillon",
       extra: { name: "Weisswein", dl: 2.5 }, notiz: "Bouillon nach und nach dazugiessen" },
     { id: "bramata",    name: "Polenta Bramata", dl: 10,  zeit: "40 Min." },
