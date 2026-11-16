@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de-CH">
 <head>
-<!-- ChuchiRechner · Version 2.0 · 16.11.2026 -->
+<!-- ChuchiRechner · Version 2.1 · 16.11.2026 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,6 +43,10 @@
   .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .prods{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
   .prods .chip{font-size:15px;padding:8px 14px}
+  .wash{display:flex;margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+  .wash[hidden]{display:none}
+  .wash button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:9px 0;cursor:pointer}
+  .wash button.on{background:var(--accent);color:#fff;font-weight:600}
   .water .meta{font-size:14px;color:var(--ink);margin-top:6px}
   .water .meta:empty{display:none}
   .water{background:var(--accent-soft);border-radius:16px;padding:14px 16px}
@@ -74,6 +78,9 @@
       <button class="step" id="plus" aria-label="mehr">+</button>
     </div>
     <div class="chips" id="chips"></div>
+    <div class="wash" id="wash" role="group" aria-label="Reis gewaschen?">
+      <button data-w="1">gewaschen</button><button data-w="0">ungewaschen</button>
+    </div>
   </section>
 
   <section class="water">
@@ -95,21 +102,30 @@
   const QUICK = [250, 500, 750, 1000], STEP = 50;
   const $ = id => document.getElementById(id);
   const amountEl = $("amount"), waterEl = $("water");
-  // Werte gemäss Packung, jeweils für 250 g
+  // Werte gemäss Packung, jeweils für 250 g; "packung" sagt, ob der Wert für gewaschenen Reis gilt
   const PRODUKTE = [
     { id: "basmati",    name: "Basmati",         dl: 4,   zeit: "15 Min.", gross: true,
-      notiz: "Vorher spülen, bis das Wasser klar ist, gut abtropfen" },
+      packung: "gewaschen" },
     { id: "vollkorn",   name: "Vollkornreis",    dl: 5.5, zeit: "50 Min.", gross: true,
-      notiz: "Über Nacht eingeweicht: ca. 30 Min." },
+      packung: "ungewaschen", notiz: "Über Nacht eingeweicht: ca. 30 Min." },
     { id: "risotto",    name: "Risotto",         dl: 7,   zeit: "20 Min.", fluessig: "Bouillon",
       extra: { name: "Weisswein", dl: 2.5 }, notiz: "Bouillon nach und nach dazugiessen" },
     { id: "bramata",    name: "Polenta Bramata", dl: 10,  zeit: "40 Min." },
-    { id: "maisgriess", name: "Maisgriess",      dl: 12,  zeit: "2 Min.",
+    { id: "maisgriess", name: "Polenta schnell", dl: 12,  zeit: "2 Min.",
       notiz: "Oder halb Milch, halb Wasser" }
   ];
   let prod = PRODUKTE[0];
   try { prod = PRODUKTE.find(p => p.id === localStorage.getItem("produkt")) || prod; } catch (e) {}
-  let ratio = prod.dl / 250;   // dl Wasser pro g
+  // Gewaschener Reis bringt Wasser mit: Schätzung ca. 0,4 dl pro 250 g
+  const WASCH_DL = 0.4;
+  let gewaschen = true;
+  try { gewaschen = localStorage.getItem("gewaschen") !== "0"; } catch (e) {}
+  function basis(){
+    if (!prod.packung) return prod.dl;
+    const packGew = prod.packung === "gewaschen";
+    return prod.dl + (packGew === gewaschen ? 0 : (gewaschen ? -WASCH_DL : WASCH_DL));
+  }
+  let ratio = basis() / 250;   // dl Wasser pro g
 
   function num(v){
     let s = String(v).replace(",", ".").replace(/½/g, ".5").replace(/\s+/g, "");
@@ -138,6 +154,8 @@
     if (prod.extra) meta.push(`<b>+ ${dl(g * prod.extra.dl / 250)} dl ${prod.extra.name}</b>`);
     meta.push("Kochzeit " + prod.zeit);
     if (prod.notiz) meta.push(prod.notiz);
+    if (prod.packung && (prod.packung === "gewaschen") !== gewaschen)
+      meta.push(`Packung: ${dl(prod.dl)} dl für ${prod.packung}en Reis, hier angepasst`);
     $("meta").innerHTML = meta.join(" · ");
     $("hints").innerHTML = (prod.gross && g >= 500 && w > 0)
       ? `<div class="hint"><b>Tipp bei grossen Mengen:</b> Es verdunstet im Verhältnis weniger Wasser. Wenn es sonst zu weich wird: eher <b>${dl(w * 0.95)} dl</b> nehmen.</div>`
@@ -149,10 +167,18 @@
     $("prods").innerHTML = PRODUKTE.map(p => `<button class="chip${p === prod ? " on" : ""}" data-p="${p.id}">${p.name}</button>`).join("");
     $("prodName").textContent = prod.name;
     $("liquidName").textContent = prod.fluessig || "Wasser";
+    $("wash").hidden = !prod.packung;
+    $("wash").querySelectorAll("button").forEach(b => b.classList.toggle("on", (b.dataset.w === "1") === gewaschen));
+  }
+  function setWash(on){
+    gewaschen = on;
+    try { localStorage.setItem("gewaschen", on ? "1" : "0"); } catch (e) {}
+    ratio = basis() / 250;
+    renderProds(); showWater(); renderExtras();
   }
   function setProd(id){
     prod = PRODUKTE.find(p => p.id === id) || prod;
-    ratio = prod.dl / 250;
+    ratio = basis() / 250;
     try { localStorage.setItem("produkt", prod.id); } catch (e) {}
     renderProds(); showWater(); renderExtras();
   }
@@ -161,6 +187,7 @@
 
   $("minus").addEventListener("click", () => setAmount(grams() - STEP));
   $("plus").addEventListener("click", () => setAmount(grams() + STEP));
+  $("wash").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setWash(b.dataset.w === "1"); });
   $("prods").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) setProd(b.dataset.p); });
   $("chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (b) setAmount(+b.dataset.g); });
   amountEl.addEventListener("input", () => { showWater(); renderExtras(); });
